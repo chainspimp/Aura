@@ -1,21 +1,123 @@
-MIT License
+AURA SOURCE LICENSE
+Version 1.0 — 2026
+Copyright (c) 2026 Channing Roe. All rights reserved.
 
-Copyright (c) 2026 chainspimp
+================================================================================
+DEFINITIONS
+================================================================================
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+"Software" means the AURA source code, documentation, assets, and all
+associated files in this repository.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+"Owner" means Channing Roe, the original author and sole copyright holder.
+
+"Contributor" means any individual who submits a pull request, patch, issue,
+or other improvement to the official AURA repository owned by the Owner.
+
+"Use" means running, executing, or interacting with the Software for personal,
+educational, or non-commercial purposes on your own machine.
+
+================================================================================
+PERMISSIONS — WHAT YOU MAY DO
+================================================================================
+
+You ARE allowed to:
+
+  1. PERSONAL USE
+     Run and use the Software on your own devices for personal,
+     non-commercial purposes.
+
+  2. STUDY
+     Read, study, and learn from the source code for educational purposes.
+
+  3. CONTRIBUTE
+     Submit pull requests, bug reports, suggestions, and improvements to the
+     official AURA repository. By submitting a contribution, you agree that
+     your contribution becomes the property of the Owner and is incorporated
+     under the terms of this license.
+
+  4. FORK FOR CONTRIBUTION ONLY
+     You may fork this repository solely for the purpose of preparing and
+     submitting contributions back to the official repository. Contribution
+     forks must not be used for any other purpose listed under RESTRICTIONS.
+
+================================================================================
+RESTRICTIONS — WHAT YOU MAY NOT DO
+================================================================================
+
+You ARE NOT allowed to, without prior written permission from the Owner:
+
+  1. REDISTRIBUTION
+     Copy, publish, upload, or distribute the Software or any substantial
+     portion of it, in source or compiled form, to any person or platform.
+
+  2. COMMERCIAL USE
+     Use the Software or any portion of it for commercial purposes, including
+     but not limited to selling, licensing, or building a paid product or
+     service based on or derived from this Software.
+
+  3. DERIVATIVE WORKS
+     Create, publish, or distribute a modified version, fork, clone, or
+     derivative of this Software as a standalone project — whether under the
+     same name, a different name, or no name.
+
+  4. REBRANDING
+     Take this Software and release it under a different name or brand as
+     though it were your own original work.
+
+  5. SUBLICENSING
+     Grant others rights to the Software that you yourself do not hold under
+     this license.
+
+  6. AI TRAINING
+     Use the Software, its source code, or its outputs to train, fine-tune,
+     or build machine learning or AI models without explicit written permission
+     from the Owner.
+
+================================================================================
+CONTRIBUTIONS
+================================================================================
+
+Contributions are welcome and encouraged under the following terms:
+
+  - By opening a pull request or submitting code to this repository, you grant
+    the Owner a perpetual, irrevocable, royalty-free license to use, modify,
+    and incorporate your contribution into the Software under any license the
+    Owner chooses.
+
+  - You confirm that your contribution is your own original work and that you
+    have the right to submit it.
+
+  - You do not retain any claim of ownership over contributions once merged.
+
+  - The Owner is not obligated to accept, merge, or credit any contribution.
+
+================================================================================
+NO WARRANTY
+================================================================================
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. IN NO EVENT SHALL THE
+OWNER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE
+USE OF OR INABILITY TO USE THE SOFTWARE.
+
+================================================================================
+ENFORCEMENT
+================================================================================
+
+Any use of this Software in violation of these terms automatically terminates
+your rights under this license. The Owner reserves the right to pursue legal
+action against violations of these terms.
+
+If you are unsure whether your intended use is permitted, contact the Owner
+before proceeding.
+
+================================================================================
+CONTACT
+================================================================================
+
+To request commercial use, partnership, or any permission not granted above,
+contact: Channing Roe via the repository's official contact channels.
+
+================================================================================
