@@ -116,58 +116,63 @@ Say *"VM mode"*, *"build mode"*, or *"IDE mode"* to launch:
 ## 🗂️ Project Structure
 
 ```
-AURA/
+Aura/
+├── config.py
+├── aura_config.json
+├── aura_memory.json
+├── aura.log
+├── requirements.txt
+├── yolov8n.pt
 │
-├── main_gui.py          # Main chat interface (entry point)
-├── config.py            # All configuration & environment variables
-├── agent.py             # Autonomous task chain executor
-├── decision.py          # AI tool router — decides what to use
-├── planner.py           # Multi-step plan generator
-├── llm.py               # Core LLM response pipeline
-├── memory.py            # Semantic memory with embeddings + LRU context
-├── thinking.py          # Deep reasoning system (DeepSeek-R1)
-├── coding.py            # Code generation & file saving
-├── vision.py            # Webcam capture + VLM description
-├── realtime_vision.py   # Background YOLO object detection thread
-├── computer_use.py      # Full computer control agent
-├── audio.py             # TTS via Piper + pygame/winsound playback
-├── speech.py            # Offline STT via Vosk + VAD
-├── web_search.py        # DuckDuckGo search + deep research
-├── image_gen.py         # SDXL-Turbo local image generation
-├── music_recognition.py # ACRCloud music identification
-├── osint.py             # OSINT engine (40+ platform checker)
-├── osint_runner.py      # OSINT intent detector + GUI launcher
-├── osint_gui.py         # OSINT GUI
-├── hacker_agent.py      # Security agent + shell emulator
-├── hacker_runner.py     # Hacker mode intent detector + launcher
-├── hacker_gui.py        # Hacker terminal GUI
-├── vm_agent.py          # VM coding agent (architect + coder + fixer)
-├── vm_runner.py         # VM mode launcher
-├── vm_gui.py            # VM IDE GUI
-├── vm_launch.py         # VM mode subprocess entry point
-├── spotify_gui.py       # Spotify control panel
-├── self_improvement.py  # AI self-rewriting system
-├── system_control.py    # Windows app control
-├── tool_router.py       # Tool routing definitions
-├── executor.py          # Tool execution dispatcher
-├── calculator.py        # Safe AST-based math evaluator
-├── performance.py       # Response time metrics tracker
-├── rate_limiter.py      # Thread-safe request rate limiter
-├── service_manager.py   # Ollama health monitor + auto-restart
-├── cursor_overlay.py    # Visual cursor overlay for computer use
-├── utils.py             # Time formatting utilities
+├── ai/
+│   ├── agent.py
+│   ├── coding.py
+│   ├── computer_use.py
+│   ├── cursor_overlay.py
+│   ├── decision.py
+│   ├── hacker_agent.py
+│   ├── hacker_runner.py
+│   ├── llm.py
+│   ├── music_recognition.py
+│   ├── planner.py
+│   ├── realtime_vision.py
+│   ├── thinking.py
+│   ├── tool_router.py
+│   ├── vision.py
+│   ├── vm_agent.py
+│   └── vm_runner.py
 │
-├── aura_config.json     # Runtime config (auto-created)
-├── aura_memory.json     # Persistent conversation memory (auto-created)
-├── requirements.txt     # Python dependencies
+├── core/
+│   ├── audio.py
+│   ├── memory.py
+│   ├── speech.py
+│   └── utils.py
 │
-├── generated_images/    # SDXL output images (auto-created)
-├── generated_code/      # AI-generated code files (auto-created)
-├── agent_outputs/       # Autonomous agent reports (auto-created)
-├── pentest_reports/     # Security agent reports (auto-created)
-├── osint_reports/       # OSINT investigation reports (auto-created)
-├── vm_workspace/        # VM agent project files (auto-created)
-└── self_improve_backups/ # Pre-improvement file backups (auto-created)
+├── services/
+│   ├── performance.py
+│   ├── rate_limiter.py
+│   └── service_manager.py
+│
+├── tools/
+│   ├── calculator.py
+│   ├── executor.py
+│   ├── image_gen.py
+│   ├── osint.py
+│   ├── osint_runner.py
+│   ├── self_improvement.py
+│   ├── system_control.py
+│   └── web_search.py
+│
+├── ui/
+│   ├── display.py
+│   ├── hacker_gui.py
+│   ├── main_gui.py
+│   ├── osint_gui.py
+│   ├── spotify_gui.py
+│   ├── vm_gui.py
+│   └── vm_launch.py
+│
+└── generated_images/
 ```
 
 ---
