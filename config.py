@@ -1,8 +1,11 @@
 import os
 import json
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Paths
 PIPER_PATH = os.environ.get("PIPER_PATH", r"C:\Users\Chains\Desktop\Projects\piper-tts\piper\piper.exe")
@@ -20,8 +23,10 @@ OLLAMA_HACK = os.environ.get("OLLAMA_HACK", "xploiter/pentester:latest")
 OLLAMA_VISION_MODEL = os.environ.get("OLLAMA_VISION_MODEL", "qwen3-vl:2b")
 OLLAMA_THINKING_MODEL = os.environ.get("OLLAMA_THINKING_MODEL", "deepseek-r1:8b")
 OLLAMA_CODING_MODEL = os.environ.get("OLLAMA_CODING_MODEL", "deepseek-coder-v2:16b")
-OLLAMA_COMPUTER_VISION_MODEL =os.environ.get("OLLAMA_CODING_MODEL", "qwen2.5-vl:7b") # Screen reading + UI element finding
-OLLAMA_COMPUTER_PLAN_MODEL   = os.environ.get("OLLAMA_CODING_MODEL", "gemma3n:e2b")    # Action planning — uses main model (fast)
+
+# FIX: These previously both fell back to OLLAMA_CODING_MODEL env var — now use their own keys
+OLLAMA_COMPUTER_VISION_MODEL = os.environ.get("OLLAMA_COMPUTER_VISION_MODEL", "qwen2.5-vl:7b")  # Screen reading + UI element finding
+OLLAMA_COMPUTER_PLAN_MODEL   = os.environ.get("OLLAMA_COMPUTER_PLAN_MODEL",   "gemma3n:e2b")    # Action planning
 
 # ACRCloud music recognition — set these in your .env file, never hardcode
 ACR_HOST = os.environ.get("ACR_HOST", "identify-us-west-2.acrcloud.com")
@@ -61,8 +66,8 @@ def load_config():
         if os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 default.update(json.load(f))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Config load error (using defaults): {e}")
     return default
 
 def save_config(cfg):
@@ -70,4 +75,5 @@ def save_config(cfg):
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(cfg, f, indent=2)
     except Exception as e:
+        logger.error(f"Config save error: {e}")
         print(f"Config save error: {e}")
