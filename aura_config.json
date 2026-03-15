@@ -1,0 +1,13 @@
+{
+  "voice_enabled": true,
+  "vision_enabled": true,
+  "auto_visual_context": false,
+  "response_timeout": 200,
+  "max_tts_length": 500,
+  "debug_mode": false,
+  "audio_method": "auto",
+  "use_vad": true,
+  "enable_thinking": false,
+  "enable_web_search": true,
+  "enable_coding": false
+}
