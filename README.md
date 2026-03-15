@@ -8,7 +8,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=flat-square&logo=python)
 ![Ollama](https://img.shields.io/badge/Powered%20by-Ollama-black?style=flat-square)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey?style=flat-square&logo=windows)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+![License](https://img.shields.io/badge/License-Source%20Available-orange?style=flat-square)
 
 </div>
 
@@ -230,7 +230,7 @@ Run in Windows Terminal as Administrator. Restart when prompted. Without WSL, AU
 
 ### Step 1 — Clone the repository
 ```bash
-git clone https://github.com/chainspimp/AURA.git
+git clone https://github.com/yourusername/AURA.git
 cd AURA
 ```
 
