@@ -3,11 +3,11 @@
 # 🤖 AURA
 ### Advanced Unified Reasoning Assistant
 
-**A fully local, voice-driven AI desktop assistant with autonomous agents, computer vision, security tools, OSINT, and a built-in coding IDE — all powered by Ollama.**
+**A fully local, voice-driven AI desktop assistant with autonomous agents, computer vision, security tools, OSINT, a built-in coding IDE, browser automation, a plugin skill system, and Telegram remote access — all powered by Ollama.**
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=flat-square&logo=python)
 ![Ollama](https://img.shields.io/badge/Powered%20by-Ollama-black?style=flat-square)
-![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey?style=flat-square&logo=windows)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=flat-square)
 ![License](https://img.shields.io/badge/License-Source%20Available-orange?style=flat-square)
 
 </div>
@@ -18,7 +18,7 @@
 
 AURA is a **fully local** AI desktop assistant built in Python. It runs entirely on your own machine — no cloud APIs, no subscriptions, no data leaving your computer. You talk to it by voice or text, and it responds through a sleek dark-themed GUI.
 
-Under the hood, AURA is a collection of specialized AI agents that collaborate: a planner breaks your request into steps, a router decides which tools to use, and individual agents execute — whether that's searching the web, writing and running code, controlling your computer, scanning a network, or building an entire software project from scratch.
+Under the hood, AURA is a collection of specialised AI agents that collaborate: a planner breaks your request into steps, a router decides which tools to use, and individual agents execute — whether that's searching the web, writing and running code, controlling your computer, scanning a network, building an entire software project from scratch, or running a scheduled background task while you sleep.
 
 ---
 
@@ -36,9 +36,30 @@ Under the hood, AURA is a collection of specialized AI agents that collaborate: 
 - Multiple Ollama model support: separate models for chat, coding, vision, thinking, and planning
 
 ### 🌐 Web Search & Research
-- **Web Search** — DuckDuckGo search with top 5 results summarized in context
-- **Deep Research** — multi-query research that fires 3+ searches and synthesizes findings
-- Automatically triggered when the AI detects your question needs current information
+- **Web Search** — DuckDuckGo search with top 5 results summarised in context
+- **Deep Research** — multi-query research that fires 3+ searches and synthesises findings
+- **Browser Automation** — Playwright-powered headless browser for real page interaction: fill forms, log in to sites, scrape dynamic content (no more fragile screenshot→click loops)
+- Automatically triggered when AURA detects your question needs current information
+
+### 🔧 Skills Plugin System *(NEW)*
+- Drop a folder into `skills/` and AURA auto-loads it on next start — no config needed
+- Skills run **before** the LLM is called, giving instant results for common tasks
+- Ships with **Weather** (wttr.in, no API key) and **Unit Converter** built in
+- Full authoring guide in `skills/HOW_TO_WRITE_A_SKILL.md` — open to community contributions
+- Enable/disable individual skills at runtime from `aura_config.json`
+
+### 📅 Proactive Scheduler *(NEW)*
+- AURA can act **without you prompting it** — check emails, run research, send reminders
+- Natural language scheduling: *"remind me every day at 9am"*, *"search for AI news every Monday at 8am"*, *"in 15 minutes..."*
+- Jobs persist in `scheduler_jobs.json` and survive restarts
+- View scheduled tasks from the GUI or via Telegram `/schedule`
+
+### 📱 Telegram Remote Interface *(NEW)*
+- Talk to AURA from your phone anywhere via **Telegram**
+- Supports text messages, voice notes (auto-transcribed via Vosk), and photos (vision)
+- Commands: `/skills`, `/schedule`, `/memory`, `/status`
+- Locked to your Telegram user ID — no one else can access your instance
+- Setup: add `TELEGRAM_TOKEN` and `TELEGRAM_ALLOWED_IDS` to `.env`
 
 ### 🤖 Autonomous Agent Mode
 - Give AURA a high-level goal and it **plans and executes a multi-step task chain** without hand-holding
@@ -59,235 +80,100 @@ Under the hood, AURA is a collection of specialized AI agents that collaborate: 
 - Image results cached via LRU to avoid redundant inference
 
 ### 🎨 Image Generation
-- Local **SDXL-Turbo** image generation (4-step, ~30 seconds on CPU)
-- Auto-fallback to `segmind/tiny-sd` (200MB) if SDXL-Turbo fails
-- Pipeline cached in memory — loads once, generates forever
-- Built-in Tkinter viewer with Save As / Regenerate buttons
+- SDXL-Turbo local image generation — fully offline
+- Images saved to `generated_images/`
+- GPU acceleration supported (CUDA)
+
+### 🔐 Security Agent
+- Full pentest terminal with AI guidance
+- Supports nmap, gobuster, hashcat, and more
+- WSL integration on Windows; native shell on Linux/macOS
+
+### 🕵️ OSINT Agent
+- Investigate usernames, emails, names across dozens of platforms
+- Generates full `.docx` intelligence reports
+- GitHub, Reddit, HackerNews, and more via free APIs
+
+### 💻 VM Coding Agent (IDE Mode)
+- Describe a project in plain English → AURA architects, writes, and runs it
+- DeepSeek-Coder-V2 for file generation with multi-round fix loops
+- Built-in code editor with syntax highlighting and live terminal
 
 ### 🎵 Music Recognition
-- Listens to ambient audio and identifies the song playing via **ACRCloud**
-- Returns title, artist, and Spotify track ID
+- ACRCloud-powered music identification (listens for 8 seconds)
 
-### 🔐 Security Agent (Hacker Mode)
-Say *"pentest"*, *"run nmap"*, *"security scan"*, or *"hacker mode"* to launch:
-- Dedicated terminal GUI with AI-driven penetration testing workflow
-- Phases: Reconnaissance → Enumeration → Exploitation Analysis
-- Auto-detects best shell: **WSL > Git Bash > PowerShell > Python emulator**
-- Pure Python shell emulator for when no real shell is available (ping, curl, whois, dig, nslookup all implemented natively)
-- Permission gate — asks before installing any missing tool
-- Supports: `nmap`, `gobuster`, `nikto`, `sqlmap`, `hydra`, `ffuf`, `subfinder`, `amass`, `theHarvester`, `whatweb`, `wafw00f`, `sslscan`
-- Auto-generates `.docx` penetration test report with findings and AI analysis
-
-### 🕵️ OSINT Engine
-Say *"OSINT"*, *"find everything about"*, or *"investigate"* to launch:
-- Multi-source person/username/email investigation
-- Checks **40+ platforms** for username presence (GitHub, Twitter/X, Reddit, LinkedIn, Instagram, TikTok, and more)
-- Generates username permutations from real names
-- Email breach checking, domain WHOIS, DNS lookup
-- Concurrent execution via `ThreadPoolExecutor`
-- Saves full investigation report as `.docx`
-
-### 🏗️ VM Coding Agent (IDE Mode)
-Say *"VM mode"*, *"build mode"*, or *"IDE mode"* to launch:
-- Describe any software project in plain English
-- AI **architect** plans the full file structure, tech stack, and dependencies
-- AI **coder** writes every file with full context of already-written files
-- Multi-round **auto-fix loop** (up to 8 rounds) — runs the code, reads errors, patches them
-- Streaming token output so you watch code being written live
-- Linting pass after each file
-- Opens a dedicated GUI window with live progress tracking
-
-### 🎼 Spotify Integration
-- Browse and control Spotify from a dedicated GUI panel
-
-### 🛠️ Self-Improvement
-- AURA can **rewrite its own source files** to improve performance, readability, and error handling
-- Syntax validation before overwrite — never saves broken code
-- Auto-backup before every change
-- Confirmation prompt (can be disabled for batch mode)
-- Skips `self_improvement.py` itself (safety guard)
-
-### ⚙️ System Control
-- Open and close Windows applications by name
-- Click, type, and automate basic UI tasks
+### 🧬 Self-Improvement
+- AURA can read, critique, and rewrite its own source files
+- Always backs up before modifying, validates Python syntax before overwriting
 
 ---
 
-## 🗂️ Project Structure
+## 🖥️ Platform Support
 
-```
-Aura/
-├── config.py
-├── aura_config.json
-├── aura_memory.json
-├── aura.log
-├── requirements.txt
-├── yolov8n.pt
-│
-├── ai/
-│   ├── agent.py
-│   ├── coding.py
-│   ├── computer_use.py
-│   ├── cursor_overlay.py
-│   ├── decision.py
-│   ├── hacker_agent.py
-│   ├── hacker_runner.py
-│   ├── llm.py
-│   ├── music_recognition.py
-│   ├── planner.py
-│   ├── realtime_vision.py
-│   ├── thinking.py
-│   ├── tool_router.py
-│   ├── vision.py
-│   ├── vm_agent.py
-│   └── vm_runner.py
-│
-├── core/
-│   ├── audio.py
-│   ├── memory.py
-│   ├── speech.py
-│   └── utils.py
-│
-├── services/
-│   ├── performance.py
-│   ├── rate_limiter.py
-│   └── service_manager.py
-│
-├── tools/
-│   ├── calculator.py
-│   ├── executor.py
-│   ├── image_gen.py
-│   ├── osint.py
-│   ├── osint_runner.py
-│   ├── self_improvement.py
-│   ├── system_control.py
-│   └── web_search.py
-│
-├── ui/
-│   ├── display.py
-│   ├── hacker_gui.py
-│   ├── main_gui.py
-│   ├── osint_gui.py
-│   ├── spotify_gui.py
-│   ├── vm_gui.py
-│   └── vm_launch.py
-│
-└── generated_images/
-```
-
----
-
-## 🔧 Prerequisites
-
-Before installing AURA, you need the following set up:
-
-### 1. Python 3.10 or higher
-Download from [python.org](https://www.python.org/downloads/). Make sure to check **"Add Python to PATH"** during install.
-
-### 2. Ollama (Required — runs the AI models)
-Download and install from [ollama.com](https://ollama.com). Then pull the models AURA uses:
-
-```bash
-# Main conversation model (fast, efficient)
-ollama pull gemma3n:e2b
-
-# Deep thinking / reasoning
-ollama pull deepseek-r1:8b
-
-# Code generation
-ollama pull deepseek-coder-v2:16b
-
-# Vision (webcam / screen reading)
-ollama pull qwen3-vl:2b
-ollama pull qwen2.5-vl:7b
-```
-
-> 💡 You can use different models by editing your `.env` file. Smaller models will be faster but less capable.
-
-### 3. Piper TTS (Required for voice output)
-Download from [github.com/rhasspy/piper](https://github.com/rhasspy/piper/releases).
-
-1. Extract it somewhere on your machine (e.g. `C:\piper-tts\piper\`)
-2. Download a voice model from the [Piper voices page](https://rhasspy.github.io/piper-samples/)
-3. Note the paths — you'll put them in your `.env` file
-
-### 4. Vosk Speech Model (Required for voice input)
-Download a model from [alphacephei.com/vosk/models](https://alphacephei.com/vosk/models).
-
-Recommended: `vosk-model-small-en-us-0.15` (~40MB, fast)
-
-Extract it and note the folder path for your `.env` file.
-
-### 5. Optional: WSL (for full Security Agent support on Windows)
-```
-wsl --install
-```
-Run in Windows Terminal as Administrator. Restart when prompted. Without WSL, AURA uses a built-in Python shell emulator for security tools.
+| Platform | Status |
+|---|---|
+| Windows 10/11 | ✅ Full support |
+| Linux (Ubuntu, Arch, Fedora) | ✅ Full support (v2) |
+| macOS (Intel + Apple Silicon) | ✅ Full support (v2) |
 
 ---
 
 ## 🚀 Installation
 
-### Step 1 — Clone the repository
+### Windows
+
+**Step 1 — Install Ollama**
+Download from [ollama.com](https://ollama.com) and pull your models:
 ```bash
-git clone https://github.com/yourusername/AURA.git
+ollama pull gemma3n:e2b
+ollama pull deepseek-r1:8b
+ollama pull deepseek-coder-v2:16b
+ollama pull qwen2.5-vl:7b
+```
+
+**Step 2 — Clone the repo**
+```bash
+git clone https://github.com/YOUR_USERNAME/AURA.git
 cd AURA
 ```
 
-### Step 2 — Create a virtual environment (recommended)
-```bash
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# macOS/Linux
-source venv/bin/activate
-```
-
-### Step 3 — Install dependencies
+**Step 3 — Install Python dependencies**
 ```bash
 pip install -r requirements.txt
+playwright install chromium
 ```
 
-> ⚠️ `torch` can be large (~2GB). If you only want CPU support and want a faster install:
-> ```bash
-> pip install torch --index-url https://download.pytorch.org/whl/cpu
-> pip install -r requirements.txt
-> ```
+**Step 4 — Set up Vosk speech model**
 
-### Step 4 — Create your `.env` file
-Create a file named `.env` in the project root:
+Download [vosk-model-small-en-us-0.15](https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip), extract it, and note the folder path.
 
+**Step 5 — Configure `.env`**
 ```env
-# ── Paths ────────────────────────────────────────────────────
-PIPER_PATH=C:\path\to\piper\piper.exe
-PIPER_MODEL=C:\path\to\piper\voices\en_US-hfc_female-medium.onnx
+PIPER_PATH=C:\path\to\piper.exe
+PIPER_MODEL=C:\path\to\voices\en_US-hfc_female-medium.onnx
 VOSK_MODEL_PATH=C:\path\to\vosk-model-small-en-us-0.15
-
-# ── Ollama Models (change to whatever models you have pulled) ─
 OLLAMA_MODEL=gemma3n:e2b
-OLLAMA_THINKING_MODEL=deepseek-r1:8b
-OLLAMA_CODING_MODEL=deepseek-coder-v2:16b
-OLLAMA_VISION_MODEL=qwen3-vl:2b
-OLLAMA_COMPUTER_VISION_MODEL=qwen2.5-vl:7b
-OLLAMA_COMPUTER_PLAN_MODEL=gemma3n:e2b
 
-# ── Music Recognition (optional) ─────────────────────────────
-# Sign up free at acrcloud.com to get these
-ACR_HOST=identify-us-west-2.acrcloud.com
-ACR_ACCESS_KEY=your_key_here
-ACR_ACCESS_SECRET=your_secret_here
+# Optional — Telegram remote access
+TELEGRAM_TOKEN=your_bot_token_from_botfather
+TELEGRAM_ALLOWED_IDS=your_telegram_user_id
 ```
 
-### Step 5 — Start Ollama
-Make sure Ollama is running before launching AURA:
+**Step 6 — Launch AURA**
 ```bash
-ollama serve
+python main_gui.py
 ```
-Or just open the Ollama desktop app.
 
-### Step 6 — Launch AURA
+---
+
+### Linux / macOS
+
+One-command setup (installs all system deps, Piper TTS, Vosk model, Playwright):
+```bash
+bash setup_unix.sh
+```
+
+Then launch:
 ```bash
 python main_gui.py
 ```
@@ -297,8 +183,9 @@ python main_gui.py
 ## 🎮 Usage
 
 ### Talking to AURA
-- **Voice:** Click the microphone button (or press your configured hotkey) and speak. AURA stops listening when you go silent.
+- **Voice:** Click the microphone button and speak. AURA stops listening when you go silent.
 - **Text:** Type in the input box and press Enter or the send button.
+- **Telegram:** Message your bot from your phone — same capabilities, remote access.
 
 ### Voice Commands & Trigger Phrases
 
@@ -306,20 +193,26 @@ python main_gui.py
 |---|---|
 | *"Search for..."* | Web search via DuckDuckGo |
 | *"Research..."* / *"Deep research on..."* | Multi-query deep research |
+| *"Go to github.com and..."* | Playwright browser automation |
+| *"Fill in the form at..."* | Browser form filling |
 | *"Write me a Python script that..."* | Code generation, saved to `generated_code/` |
 | *"Generate an image of..."* | SDXL-Turbo image generation |
 | *"What do you see?"* | Webcam capture + AI description |
 | *"Think about..."* / *"Analyse..."* | Deep reasoning mode |
 | *"Agent mode: research X and write a report"* | Autonomous multi-step agent |
+| *"Remind me every day at 9am to..."* | Creates a scheduled task |
+| *"Every Monday at 8am, search for AI news"* | Recurring scheduled research |
 | *"Pentest 192.168.1.1"* / *"Hacker mode"* | Opens Security Agent terminal |
 | *"OSINT on John Smith"* / *"Investigate..."* | Opens OSINT investigation GUI |
 | *"VM mode"* / *"Build mode"* / *"IDE mode"* | Opens VM Coding Agent IDE |
 | *"What song is this?"* | Music recognition (listens for 8s) |
 | *"Open Chrome"* / *"Close Spotify"* | System app control |
 | *"Calculate 2^32 / 1024"* | Safe math evaluation |
+| *"Weather in London"* | Weather skill (instant, no LLM) |
+| *"100 km in miles"* | Unit converter skill (instant) |
 
 ### Settings
-AURA's runtime settings are stored in `aura_config.json` and can be toggled from the GUI:
+AURA's runtime settings are stored in `aura_config.json`:
 
 | Setting | Default | Description |
 |---|---|---|
@@ -329,7 +222,12 @@ AURA's runtime settings are stored in `aura_config.json` and can be toggled from
 | `enable_thinking` | `false` | Enable deep reasoning by default |
 | `enable_web_search` | `true` | Enable automatic web search routing |
 | `enable_coding` | `false` | Enable automatic code generation routing |
-| `use_vad` | `true` | Use Voice Activity Detection (needs webrtcvad) |
+| `enable_skills` | `true` | Enable skills plugin system |
+| `enable_browser` | `true` | Enable Playwright browser automation |
+| `enable_scheduler` | `true` | Enable proactive scheduler daemon |
+| `enable_telegram_bot` | `false` | Enable Telegram remote interface |
+| `browser_headless` | `true` | Run browser without visible window |
+| `use_vad` | `true` | Use Voice Activity Detection |
 | `response_timeout` | `200` | Ollama response timeout in seconds |
 | `max_tts_length` | `500` | Max characters sent to TTS |
 
@@ -338,13 +236,19 @@ AURA's runtime settings are stored in `aura_config.json` and can be toggled from
 ## 🧩 How the AI Pipeline Works
 
 ```
-User Input (voice or text)
+User Input (voice, text, or Telegram)
         │
         ▼
-  Decision System ──► Checks: computer use? code? web search? thinking? vision? music?
+  Skills Fast-Path ──► Matches keyword? → Run skill instantly (no LLM)
+        │ no match
+        ▼
+  Scheduler Check ──► Schedule phrase? → Create APScheduler job
+        │ no match
+        ▼
+  Decision System ──► computer use? code? browser? web search? thinking? vision?
         │
         ▼
-  Tool Execution ──► Runs selected tools in parallel where possible
+  Tool Execution ──► Runs selected tools (browser, search, vision, etc.)
         │
         ▼
   LLM Response ──► Builds context from memory + tool results → Ollama → response
@@ -353,10 +257,53 @@ User Input (voice or text)
   Memory System ──► Saves interaction with embedding for future semantic recall
         │
         ▼
-  TTS Output ──► Piper speaks the response
+  TTS + GUI Output ──► Piper speaks the response, GUI displays it
+        │
+        ▼
+  Telegram Mirror ──► Response also sent to Telegram if message came from there
 ```
 
 **Memory** uses sentence embeddings (`all-MiniLM-L6-v2`) for semantic search — AURA doesn't just remember the last few messages, it retrieves the most *relevant* past context even from 100 conversations ago.
+
+---
+
+## 🔧 Writing a Skill
+
+Skills are the fastest way to extend AURA. Drop a folder into `skills/` and it auto-loads:
+
+```
+skills/
+└── my_skill/
+    ├── skill.py     ← required
+    └── SKILL.md     ← recommended
+```
+
+Minimal `skill.py`:
+```python
+NAME     = "My Skill"
+ICON     = "🚀"
+KEYWORDS = ["trigger word", "another phrase"]
+
+def run(prompt: str, context: str = "") -> dict:
+    return {"success": True, "output": "My response"}
+```
+
+See `skills/HOW_TO_WRITE_A_SKILL.md` for the full guide.
+
+---
+
+## 📱 Telegram Setup
+
+1. Message `@BotFather` on Telegram → `/newbot` → copy the token
+2. Get your Telegram user ID from `@userinfobot`
+3. Add to `.env`:
+```env
+TELEGRAM_TOKEN=1234567890:ABCdef...
+TELEGRAM_ALLOWED_IDS=987654321
+```
+4. Set `enable_telegram_bot: true` in `aura_config.json`
+
+Available commands: `/skills`, `/schedule`, `/memory`, `/status`, `/help`
 
 ---
 
@@ -366,26 +313,50 @@ User Input (voice or text)
 Make sure `ollama serve` is running. Check it's accessible at `http://localhost:11434`.
 
 **"Vosk model not found"**
-Update `VOSK_MODEL_PATH` in your `.env` to point to the extracted model folder (the folder that contains `conf/`, `am/`, etc.).
+Update `VOSK_MODEL_PATH` in your `.env` to point to the extracted model folder (must contain `conf/` or `am/`).
 
 **"Piper not found" / No voice output**
-Update `PIPER_PATH` and `PIPER_MODEL` in your `.env`. Make sure `piper.exe` exists at that path.
+- Windows: Update `PIPER_PATH` and `PIPER_MODEL` in `.env`
+- Linux: Run `bash setup_unix.sh` — it downloads and configures Piper automatically
+- macOS: `brew install espeak` as a fallback, or use `setup_unix.sh`
+
+**Playwright not working**
+```bash
+pip install playwright
+playwright install chromium
+```
+
+**APScheduler not found**
+```bash
+pip install apscheduler
+```
+
+**Telegram bot not responding**
+- Check `TELEGRAM_TOKEN` is set in `.env`
+- Check `enable_telegram_bot: true` in `aura_config.json`
+- Ensure your user ID is in `TELEGRAM_ALLOWED_IDS`
 
 **Image generation is very slow**
-SDXL-Turbo on CPU takes 20-60 seconds on first run. Subsequent generations are faster because the model stays cached in memory. A GPU (CUDA) will make this 10x faster — set `torch_dtype=torch.float16` and `pipe.to("cuda")` in `image_gen.py`.
+SDXL-Turbo on CPU takes 20-60 seconds on first run. A GPU (CUDA) will make this 10x faster — set `torch_dtype=torch.float16` and `pipe.to("cuda")` in `image_gen.py`.
 
 **Security Agent shows "virtual shell"**
-WSL is not installed or not responding. Install it with `wsl --install` (Admin terminal, requires restart). Without WSL, basic network commands (ping, curl, whois, dig) still work via AURA's built-in Python emulator.
+WSL is not installed. Run `wsl --install` (Admin terminal, requires restart). Basic network commands still work via AURA's built-in Python emulator without WSL.
 
 **`webrtcvad` install fails on Windows**
 ```bash
 pip install webrtcvad-wheels
 ```
 
-**`pyaudio` install fails**
+**`pyaudio` install fails on Windows**
 ```bash
 pip install pipwin
 pipwin install pyaudio
+```
+
+**`pyaudio` install fails on Linux**
+```bash
+sudo apt install portaudio19-dev
+pip install pyaudio
 ```
 
 ---
@@ -396,7 +367,7 @@ pipwin install pyaudio
 |---|---|
 | `vosk` | Offline speech recognition |
 | `pyaudio` | Microphone audio capture |
-| `webrtcvad` | Voice Activity Detection |
+| `webrtcvad-wheels` | Voice Activity Detection |
 | `pygame` | Audio playback |
 | `opencv-python` | Webcam frame capture |
 | `pillow` | Image processing |
@@ -405,17 +376,16 @@ pipwin install pyaudio
 | `duckduckgo-search` | Web search |
 | `requests` | Ollama API calls |
 | `numpy` | Embedding math |
-| `psutil` | Process management (app control) |
+| `psutil` | Process management |
 | `pyautogui` | Mouse/keyboard automation |
 | `python-dotenv` | `.env` file loading |
 | `keyboard` | Hotkey detection |
-
-Optional (installed separately):
-| Package | Purpose |
-|---|---|
-| `python-docx` | Word document generation for reports |
+| `python-docx` | Word document generation |
 | `ultralytics` | YOLO real-time object detection |
 | `sounddevice` | Music recognition audio capture |
+| `playwright` | Browser automation *(new)* |
+| `APScheduler` | Proactive scheduler daemon *(new)* |
+| `python-telegram-bot` | Telegram remote interface *(new)* |
 
 ---
 
@@ -424,33 +394,40 @@ Optional (installed separately):
 - **100% local** — AURA never sends your conversations, voice data, or files to any external server
 - All AI inference runs through your local Ollama instance
 - Web search uses DuckDuckGo (no tracking)
-- Music recognition uses ACRCloud (audio fingerprint only, not raw audio recording)
+- Music recognition uses ACRCloud (audio fingerprint only, not raw audio)
+- Telegram bot is locked to your user ID — set `TELEGRAM_ALLOWED_IDS` in `.env`
 - The Security Agent requires explicit permission before installing any tool
-- `self_improvement.py` always backs up files before modifying them and validates Python syntax before overwriting
+- `self_improvement.py` always backs up files before modifying and validates syntax before overwriting
 
 ---
 
 ## 🗺️ Roadmap
 
-- [ ] Multi-monitor support for computer use
-- [ ] Plugin system for custom tools
+- [x] Skills plugin system
+- [x] Telegram remote interface
+- [x] Playwright browser automation
+- [x] Proactive scheduler daemon
+- [x] Linux / macOS support
 - [ ] Wake word detection ("Hey AURA")
-- [ ] Mobile companion app
+- [ ] Multi-monitor support for computer use
 - [ ] Multi-agent collaboration (agents spawning sub-agents)
+- [ ] Skills marketplace / community registry
 - [ ] GPU-accelerated image generation config in GUI
-- [ ] Persistent agent memory across sessions
+- [ ] Mobile companion app
 
 ---
 
 ## 🤝 Contributing
 
-Pull requests are welcome. For major changes, open an issue first to discuss what you'd like to change.
+Pull requests are welcome. For major changes, open an issue first.
 
 1. Fork the repo
 2. Create your feature branch: `git checkout -b feature/my-feature`
 3. Commit your changes: `git commit -m 'Add some feature'`
 4. Push to the branch: `git push origin feature/my-feature`
 5. Open a Pull Request
+
+**Want to contribute a skill?** See `skills/HOW_TO_WRITE_A_SKILL.md`.
 
 ---
 
