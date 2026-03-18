@@ -1,13 +1,10 @@
 # =============================================================================
-# FILE: ai/decision.py  (UPDATED — adds skill routing, browser, scheduler)
+# FILE: ai/decision_v3.py  (replace ai/decision.py)
+# AURA Decision System v3
 #
-# PATCH INSTRUCTIONS:
-#   Replace your existing ai/decision.py with this file.
-#   Changes from original:
-#     1. Added skill registry check BEFORE LLM routing (fast path)
-#     2. Added "browser_use" route flag
-#     3. Added "schedule" route flag
-#     4. decide_and_execute() handles the new flags
+# New in this version:
+#   - Multi-agent routing (should_use_multi_agent check)
+#   - Memory recall injection (cross-session recall in context)
 # =============================================================================
 
 import json
@@ -23,30 +20,28 @@ _ROUTE_SYSTEM = """You are a tool router. Return ONLY a raw JSON object with no 
 Set each tool to true only if the user explicitly needs it."""
 
 _ROUTE_TEMPLATE = """{
-  "code_generation": false,
-  "web_search": false,
-  "deep_research": false,
-  "deep_thinking": false,
+  "code_generation":  false,
+  "web_search":       false,
+  "deep_research":    false,
+  "deep_thinking":    false,
   "image_generation": false,
   "face_recognition": false,
-  "vision_analysis": false,
-  "music_recognition": false,
-  "computer_use": false,
-  "browser_use": false,
-  "schedule": false
+  "vision_analysis":  false,
+  "music_recognition":false,
+  "computer_use":     false,
+  "browser_use":      false,
+  "schedule":         false,
+  "multi_agent":      false
 }"""
 
-# Schedule trigger keywords
 _SCHEDULE_KWS = [
-    "remind me", "schedule", "every day", "every hour", "every week",
-    "every monday", "every morning", "set an alarm", "alert me", "notify me",
-    "in 10 minutes", "in 30 minutes", "every night", "daily at", "cron"
+    "remind me","schedule","every day","every hour","every week",
+    "every monday","every morning","set an alarm","alert me","notify me",
+    "in 10 minutes","in 30 minutes","every night","daily at","cron"
 ]
-
-# Browser trigger keywords
 _BROWSER_KWS = [
-    "go to", "open website", "browse to", "visit", "fill in the form",
-    "log in to", "click on", "scrape", "web automation", "fill out"
+    "go to","open website","browse to","visit","fill in the form",
+    "log in to","click on","scrape","web automation","fill out"
 ]
 
 
@@ -72,16 +67,16 @@ class DecisionSystem:
                 try:
                     return json.loads(match.group(0))
                 except json.JSONDecodeError:
-                    logger.warning("Route response was not valid JSON — using keyword fallback")
+                    pass
 
         # Keyword fallback
         low = prompt.lower()
-        if any(kw in low for kw in ['write', 'make', 'create', 'code', 'python', 'script']):
-            return {"code_generation": True}
         if any(kw in low for kw in _SCHEDULE_KWS):
             return {"schedule": True}
         if any(kw in low for kw in _BROWSER_KWS):
             return {"browser_use": True}
+        if any(kw in low for kw in ['write','make','create','code','python','script']):
+            return {"code_generation": True}
         from ai.computer_use import should_use_computer
         if should_use_computer(prompt):
             return {"computer_use": True}
@@ -89,21 +84,29 @@ class DecisionSystem:
 
     def decide_and_execute(self, prompt: str, context: str) -> Dict[str, any]:
         actions = {
-            'thinking_used':    False,  'web_used':          False,
-            'research_used':    False,  'vision_used':        False,
-            'image_generated':  False,  'code_generated':     False,
-            'face_recognized':  False,  'thinking_result':    '',
-            'web_result':       '',     'research_result':    '',
-            'vision_result':    '',     'image_result':       '',
-            'code_result':      {},     'face_result':        {},
-            'computer_used':    False,  'computer_result':    '',
-            # New fields
-            'skill_used':       False,  'skill_result':       '',
-            'browser_used':     False,  'browser_result':     '',
-            'schedule_used':    False,  'schedule_result':    '',
+            'thinking_used':False,'web_used':False,'research_used':False,
+            'vision_used':False,'image_generated':False,'code_generated':False,
+            'face_recognized':False,'thinking_result':'','web_result':'',
+            'research_result':'','vision_result':'','image_result':'',
+            'code_result':{},'face_result':{},'computer_used':False,
+            'computer_result':'','skill_used':False,'skill_result':'',
+            'browser_used':False,'browser_result':'','schedule_used':False,
+            'schedule_result':'','multi_agent_used':False,'multi_agent_result':'',
+            'recall_injected':False,'recall_context':'',
         }
 
-        # ── 0. Skills fast-path (before LLM routing) ──────────────────────────
+        # ── 0. Cross-session memory recall injection ──────────────────────────
+        try:
+            from core.memory_enhanced import get_recall_context
+            recall_ctx = get_recall_context(prompt)
+            if recall_ctx:
+                actions['recall_injected'] = True
+                actions['recall_context']  = recall_ctx
+                context = recall_ctx + "\n\n" + context
+        except Exception as e:
+            logger.debug(f"Recall skipped: {e}")
+
+        # ── 1. Skills fast-path ───────────────────────────────────────────────
         try:
             from config import load_config
             cfg = load_config()
@@ -113,13 +116,11 @@ class DecisionSystem:
                 if skill_result:
                     actions['skill_used']   = True
                     actions['skill_result'] = skill_result.output
-                    logger.info(f"Skill handled: {skill_result.skill}")
-                    # Skills can fully handle the request — return early
                     return actions
         except Exception as e:
-            logger.debug(f"Skill routing skipped: {e}")
+            logger.debug(f"Skills skipped: {e}")
 
-        # ── 1. Scheduler shortcut ─────────────────────────────────────────────
+        # ── 2. Scheduler ──────────────────────────────────────────────────────
         low = prompt.lower()
         if any(kw in low for kw in _SCHEDULE_KWS):
             try:
@@ -134,12 +135,23 @@ class DecisionSystem:
             except Exception as e:
                 logger.warning(f"Scheduler error: {e}")
 
-        # ── 2. Normal LLM routing ─────────────────────────────────────────────
+        # ── 3. Multi-agent check ──────────────────────────────────────────────
+        try:
+            from ai.multi_agent import should_use_multi_agent, AgentCoordinator
+            if should_use_multi_agent(prompt):
+                coordinator = AgentCoordinator(self.tools, self.thinking, self.coding)
+                ma_result   = coordinator.run(prompt, context)
+                actions['multi_agent_used']   = True
+                actions['multi_agent_result'] = ma_result.final_answer
+                return actions
+        except Exception as e:
+            logger.warning(f"Multi-agent skipped: {e}")
+
+        # ── 4. Normal LLM routing ─────────────────────────────────────────────
         from ai.computer_use import should_use_computer
         route = {"computer_use": True} if should_use_computer(prompt) \
             else self.ai_route(prompt, context)
 
-        # ── Browser Use ───────────────────────────────────────────────────────
         if route.get("browser_use"):
             try:
                 from tools.browser import browser_task
@@ -150,18 +162,15 @@ class DecisionSystem:
                 actions['browser_result'] = f"Browser error: {e}"
             return actions
 
-        # ── Computer Use ──────────────────────────────────────────────────────
         if route.get("computer_use"):
             try:
                 from ai.computer_use import execute_computer_task
-                result = execute_computer_task(prompt)
+                actions['computer_result'] = execute_computer_task(prompt)
                 actions['computer_used']   = True
-                actions['computer_result'] = result
             except Exception as e:
                 actions['computer_result'] = f"Computer use error: {e}"
             return actions
 
-        # ── Existing tool handlers (web search, code, vision, etc.) ──────────
         if route.get("web_search") and self.tools:
             try:
                 from tools.web_search import web_search
@@ -215,6 +224,6 @@ class DecisionSystem:
                     actions['web_result'] = str(result)
                     actions['web_used']   = True
             except Exception as e:
-                logger.warning(f"Music recognition error: {e}")
+                logger.warning(f"Music error: {e}")
 
         return actions
