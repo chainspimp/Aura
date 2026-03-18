@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURA — Dashboard</title>
+<style>
+  :root {
+    --bg:      #0b0f1e;
+    --surface: #111827;
+    --edge:    #1e293b;
+    --blue:    #3b82f6;
+    --blue2:   #60a5fa;
+    --green:   #22c55e;
+    --amber:   #f59e0b;
+    --red:     #ef4444;
+    --purple:  #a855f7;
+    --t1:      #f1f5f9;
+    --t2:      #94a3b8;
+    --t3:      #475569;
+    --radius:  10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--t1); font-family: 'Segoe UI', system-ui, sans-serif; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── Nav ── */
+  nav { background: var(--surface); border-bottom: 1px solid var(--edge); display: flex; align-items: center; padding: 0 16px; height: 52px; flex-shrink: 0; gap: 6px; }
+  .logo { font-size: 18px; font-weight: 700; color: var(--blue2); margin-right: 12px; white-space: nowrap; }
+  .nav-btn { background: none; border: none; color: var(--t2); font-size: 13px; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .nav-btn:hover { background: var(--edge); color: var(--t1); }
+  .nav-btn.active { background: var(--blue); color: #fff; }
+  .nav-spacer { flex: 1; }
+  #status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+  /* ── Layout ── */
+  .main { flex: 1; display: flex; overflow: hidden; }
+  .panel { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .panel.active { display: flex; }
+
+  /* ── Chat panel ── */
+  #chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 80%; padding: 10px 14px; border-radius: var(--radius); font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+  .msg.user { align-self: flex-end; background: var(--blue); color: #fff; border-bottom-right-radius: 3px; }
+  .msg.assistant { align-self: flex-start; background: var(--surface); color: var(--t1); border: 1px solid var(--edge); border-bottom-left-radius: 3px; }
+  .msg.system { align-self: center; color: var(--t3); font-size: 12px; font-style: italic; background: none; }
+  .msg .label { font-size: 11px; opacity: .6; margin-bottom: 4px; }
+  .typing-dots span { animation: blink 1.2s infinite; display: inline-block; }
+  .typing-dots span:nth-child(2) { animation-delay: .2s; }
+  .typing-dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100% { opacity: .2 } 40% { opacity: 1 } }
+
+  .chat-input-row { display: flex; gap: 8px; padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--edge); flex-shrink: 0; }
+  #chat-input { flex: 1; background: var(--edge); border: 1px solid var(--edge); border-radius: 8px; padding: 10px 14px; color: var(--t1); font-size: 14px; resize: none; outline: none; font-family: inherit; }
+  #chat-input:focus { border-color: var(--blue); }
+  #send-btn { background: var(--blue); border: none; color: #fff; border-radius: 8px; padding: 0 20px; font-size: 14px; cursor: pointer; font-weight: 600; transition: background .15s; flex-shrink: 0; }
+  #send-btn:hover { background: var(--blue2); }
+  #send-btn:disabled { background: var(--edge); color: var(--t3); cursor: not-allowed; }
+
+  /* ── Generic panel content ── */
+  .panel-content { flex: 1; overflow-y: auto; padding: 20px; }
+  .section-title { font-size: 16px; font-weight: 700; color: var(--blue2); margin-bottom: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--edge); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .card-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .card-sub { color: var(--t2); font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge.green { background: rgba(34,197,94,.15); color: var(--green); }
+  .badge.red   { background: rgba(239,68,68,.15); color: var(--red); }
+  .badge.blue  { background: rgba(59,130,246,.15); color: var(--blue2); }
+
+  /* ── Status grid ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--edge); border-radius: var(--radius); padding: 14px; }
+  .stat-val { font-size: 22px; font-weight: 700; color: var(--blue2); }
+  .stat-label { font-size: 12px; color: var(--t2); margin-top: 4px; }
+
+  /* ── Forms ── */
+  .form-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .form-input { flex: 1; min-width: 140px; background: var(--edge); border: 1px solid var(--t3); border-radius: 6px; padding: 8px 10px; color: var(--t1); font-size: 13px; outline: none; }
+  .form-input:focus { border-color: var(--blue); }
+  .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .15s; }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue2); }
+  .btn-danger  { background: rgba(239,68,68,.15); color: var(--red); }
+  .btn-danger:hover  { background: var(--red); color: #fff; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* ── History ── */
+  .history-item { background: var(--surface); border: 1px solid var(--edge); border-radius: var(--radius); padding: 12px; margin-bottom: 8px; }
+  .history-meta { font-size: 11px; color: var(--t3); margin-bottom: 6px; }
+  .history-user { font-size: 13px; color: var(--blue2); margin-bottom: 4px; }
+  .history-aura { font-size: 13px; color: var(--t2); }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 3px; }
+
+  /* ── Mobile ── */
+  @media (max-width: 600px) {
+    .logo { font-size: 15px; }
+    .nav-btn { padding: 5px 8px; font-size: 12px; }
+    .msg { max-width: 95%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="logo">🤖 AURA</span>
+  <button class="nav-btn active" onclick="showPanel('chat')">💬 Chat</button>
+  <button class="nav-btn" onclick="showPanel('history')">📜 History</button>
+  <button class="nav-btn" onclick="showPanel('skills')">🔧 Skills</button>
+  <button class="nav-btn" onclick="showPanel('scheduler')">📅 Scheduler</button>
+  <button class="nav-btn" onclick="showPanel('memory')">🧠 Memory</button>
+  <button class="nav-btn" onclick="showPanel('status')">🖥️ Status</button>
+  <span class="nav-spacer"></span>
+  <div id="status-dot" title="Ollama status"></div>
+</nav>
+
+<div class="main">
+
+  <!-- CHAT -->
+  <div id="panel-chat" class="panel active">
+    <div id="chat-messages">
+      <div class="msg system">AURA Web Dashboard — type a message to begin</div>
+    </div>
+    <div class="chat-input-row">
+      <textarea id="chat-input" rows="2" placeholder="Message AURA..." onkeydown="handleKey(event)"></textarea>
+      <button id="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="panel-history" class="panel">
+    <div class="panel-content">
+      <div class="section-title">📜 Conversation History</div>
+      <div class="form-row">
+        <input class="form-input" id="hist-q" placeholder="Search...">
+        <input class="form-input" id="hist-date" placeholder="Date (e.g. yesterday)">
+        <button class="btn btn-primary" onclick="loadHistory()">Search</button>
+      </div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+  <!-- SKILLS -->
+  <div id="panel-skills" class="panel">
+    <div class="panel-content">
+      <div class="section-title">🔧 Loaded Skills</div>
+      <button class="btn btn-primary btn-sm" onclick="reloadSkills()" style="margin-bottom:12px">↻ Reload</button>
+      <div id="skills-list"></div>
+    </div>
+  </div>
+
+  <!-- SCHEDULER -->
+  <div id="panel-scheduler" class="panel">
+    <div class="panel-content">
+      <div class="section-title">📅 Scheduled Tasks</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Add New Task</div>
+        <div class="form-row" style="margin-top:10px">
+          <input class="form-input" id="sched-name" placeholder="Name (e.g. Morning Brief)">
+          <input class="form-input" id="sched-task" placeholder="Task (e.g. search for AI news)">
+          <input class="form-input" id="sched-schedule" placeholder="Schedule (e.g. daily at 09:00)">
+          <button class="btn btn-primary" onclick="addJob()">Add</button>
+        </div>
+      </div>
+      <div id="jobs-list"></div>
+    </div>
+  </div>
+
+  <!-- MEMORY -->
+  <div id="panel-memory" class="panel">
+    <div class="panel-content">
+      <div class="section-title">🧠 Long-Term Memory</div>
+      <div class="form-row">
+        <input class="form-input" id="mem-fact" placeholder="New fact to teach AURA...">
+        <button class="btn btn-primary" onclick="learnFact()">Learn</button>
+      </div>
+      <div id="memory-list"></div>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div id="panel-status" class="panel">
+    <div class="panel-content">
+      <div class="section-title">🖥️ System Status</div>
+      <div class="stat-grid" id="stat-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =============================================================================
+// STATE
+// =============================================================================
+let currentPanel = 'chat';
+let isWaiting    = false;
+
+// =============================================================================
+// NAVIGATION
+// =============================================================================
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+  currentPanel = id;
+  if (id === 'skills')    loadSkills();
+  if (id === 'scheduler') loadJobs();
+  if (id === 'memory')    loadMemory();
+  if (id === 'status')    loadStatus();
+  if (id === 'history')   loadHistory();
+}
+
+// =============================================================================
+// CHAT
+// =============================================================================
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const msg   = input.value.trim();
+  if (!msg || isWaiting) return;
+
+  addMsg('user', msg);
+  input.value = '';
+  isWaiting   = true;
+  document.getElementById('send-btn').disabled = true;
+
+  const typingEl = addMsg('assistant', '<div class="typing-dots"><span>●</span><span>●</span><span>●</span></div>', true);
+
+  try {
+    const resp = await fetch('/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg })
+    });
+
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let   buffer  = '';
+    let   full    = '';
+    let   started = false;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data:')) continue;
+        try {
+          const ev = JSON.parse(line.slice(5).trim());
+          if (ev.type === 'token') {
+            if (!started) { typingEl.innerHTML = ''; started = true; }
+            full += ev.text;
+            typingEl.textContent = full;
+            scrollChat();
+          } else if (ev.type === 'done') {
+            typingEl.textContent = ev.full || full;
+            scrollChat();
+          }
+        } catch (_) {}
+      }
+    }
+  } catch (err) {
+    typingEl.textContent = '⚠️ Error: ' + err.message;
+  }
+
+  isWaiting = false;
+  document.getElementById('send-btn').disabled = false;
+  input.focus();
+}
+
+function addMsg(role, content, raw = false) {
+  const el  = document.createElement('div');
+  el.className = 'msg ' + role;
+  if (raw) el.innerHTML = content;
+  else     el.textContent = content;
+  document.getElementById('chat-messages').appendChild(el);
+  scrollChat();
+  return el;
+}
+
+function scrollChat() {
+  const el = document.getElementById('chat-messages');
+  el.scrollTop = el.scrollHeight;
+}
+
+// =============================================================================
+// HISTORY
+// =============================================================================
+async function loadHistory() {
+  const q    = document.getElementById('hist-q').value;
+  const date = document.getElementById('hist-date').value;
+  const params = new URLSearchParams({ limit: 30 });
+  if (q)    params.set('q', q);
+  if (date) params.set('date', date);
+
+  const data = await fetchJSON('/api/history?' + params);
+  const list = document.getElementById('history-list');
+  list.innerHTML = '';
+
+  if (!data.results?.length) { list.innerHTML = '<div class="card-sub">No results.</div>'; return; }
+
+  data.results.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'history-item';
+    el.innerHTML = `
+      <div class="history-meta">${r.weekday || ''} ${(r.timestamp||'').slice(0,16).replace('T',' ')}</div>
+      <div class="history-user">You: ${esc(r.user||'')}</div>
+      <div class="history-aura">AURA: ${esc((r.aura||'').slice(0,300))}</div>`;
+    list.appendChild(el);
+  });
+}
+
+// =============================================================================
+// SKILLS
+// =============================================================================
+async function loadSkills() {
+  const data = await fetchJSON('/api/skills');
+  const list = document.getElementById('skills-list');
+  list.innerHTML = '';
+  if (!data.skills?.length) { list.innerHTML = '<div class="card-sub">No skills loaded.</div>'; return; }
+
+  data.skills.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="card-title">${s.icon} ${esc(s.name)} <span class="badge blue">v${esc(s.version)}</span></div>
+          <div class="card-sub">${esc(s.description)}</div>
+          <div class="card-sub" style="margin-top:4px">Keywords: ${esc((s.keywords||[]).join(', '))}</div>
+        </div>
+        <span class="badge ${s.enabled ? 'green' : 'red'}">${s.enabled ? 'enabled' : 'disabled'}</span>
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+async function reloadSkills() {
+  await fetchJSON('/api/skills/reload', 'POST');
+  loadSkills();
+}
+
+// =============================================================================
+// SCHEDULER
+// =============================================================================
+async function loadJobs() {
+  const data = await fetchJSON('/api/scheduler/jobs');
+  const list = document.getElementById('jobs-list');
+  list.innerHTML = '';
+
+  if (!data.jobs?.length) { list.innerHTML = '<div class="card-sub">No scheduled tasks.</div>'; return; }
+
+  data.jobs.forEach(j => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="card-title">📅 ${esc(j.name)}</div>
+          <div class="card-sub">${esc(j.task)}</div>
+          <div class="card-sub" style="margin-top:4px">
+            ⏱ ${esc(j.trigger)} &nbsp;|&nbsp; Next: ${esc(j.next_run||'soon')}
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="deleteJob('${j.job_id}')">Delete</button>
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+async function addJob() {
+  const name     = document.getElementById('sched-name').value.trim();
+  const task     = document.getElementById('sched-task').value.trim();
+  const schedule = document.getElementById('sched-schedule').value.trim();
+  if (!name || !task || !schedule) return alert('Name, task, and schedule are required.');
+
+  const data = await fetchJSON('/api/scheduler/add', 'POST', { name, task, schedule });
+  if (data.error) return alert('Error: ' + data.error);
+
+  ['sched-name','sched-task','sched-schedule'].forEach(id => document.getElementById(id).value = '');
+  loadJobs();
+}
+
+async function deleteJob(id) {
+  if (!confirm('Delete this scheduled task?')) return;
+  await fetchJSON('/api/scheduler/jobs/' + id, 'DELETE');
+  loadJobs();
+}
+
+// =============================================================================
+// MEMORY
+// =============================================================================
+async function loadMemory() {
+  const data = await fetchJSON('/api/memory');
+  const list = document.getElementById('memory-list');
+  list.innerHTML = '';
+
+  const facts = data.facts || [];
+  if (!facts.length) { list.innerHTML = '<div class="card-sub">No facts stored yet.</div>'; return; }
+
+  facts.slice().reverse().forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div>
+          <span class="badge blue">${esc(f.category||'general')}</span>
+          <span style="margin-left:8px;font-size:13px">${esc(f.text)}</span>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="forgetFact('${esc(f.text).replace(/'/g,"\\'")}')">Forget</button>
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+async function learnFact() {
+  const input = document.getElementById('mem-fact');
+  const fact  = input.value.trim();
+  if (!fact) return;
+  const data = await fetchJSON('/api/memory/learn', 'POST', { fact });
+  if (data.error) return alert(data.error);
+  input.value = '';
+  loadMemory();
+}
+
+async function forgetFact(text) {
+  if (!confirm('Forget: "' + text + '"?')) return;
+  await fetchJSON('/api/memory/forget', 'POST', { text });
+  loadMemory();
+}
+
+// =============================================================================
+// STATUS
+// =============================================================================
+async function loadStatus() {
+  const data = await fetchJSON('/api/status');
+  const grid = document.getElementById('stat-grid');
+  grid.innerHTML = '';
+
+  const stats = [
+    { val: data.platform || '?',             label: 'Platform' },
+    { val: data.python   || '?',             label: 'Python' },
+    { val: data.ollama ? '✅ Online' : '❌ Offline', label: 'Ollama', color: data.ollama ? 'var(--green)' : 'var(--red)' },
+    { val: (data.cpu_percent ?? '?') + '%',  label: 'CPU Usage' },
+    { val: (data.ram_percent ?? '?') + '%',  label: 'RAM Usage' },
+    { val: data.gpu_available ? (data.gpu_name || 'GPU') : 'None', label: 'GPU' },
+    { val: data.gpu_vram_gb ? data.gpu_vram_gb + ' GB' : '—', label: 'VRAM' },
+  ];
+
+  stats.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'stat-card';
+    el.innerHTML = `<div class="stat-val" style="${s.color ? 'color:'+s.color : ''}">${esc(String(s.val))}</div><div class="stat-label">${esc(s.label)}</div>`;
+    grid.appendChild(el);
+  });
+
+  // Update status dot
+  document.getElementById('status-dot').style.background = data.ollama ? 'var(--green)' : 'var(--red)';
+}
+
+// =============================================================================
+// UTILS
+// =============================================================================
+async function fetchJSON(url, method = 'GET', body = null) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(url, opts);
+    return await r.json();
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// =============================================================================
+// INIT
+// =============================================================================
+loadStatus();
+setInterval(loadStatus, 30000);
+document.getElementById('chat-input').focus();
+</script>
+</body>
+</html>
